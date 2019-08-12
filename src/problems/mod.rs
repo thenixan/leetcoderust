@@ -1,5 +1,8 @@
+use std::rc::Rc;
+
 mod problem_5;
 mod problem_226;
+mod problem_337;
 mod problem_561;
 mod problem_70;
 
@@ -10,6 +13,10 @@ pub fn problem_5() {
 
 pub fn problem_226() {
     assert_eq!(None, problem_226::Solution::invert_tree(None));
+}
+
+pub fn problem_337() {
+    assert_eq!(0, problem_337::Solution::rob(None));
 }
 
 pub fn problem_561() {
