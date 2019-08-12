@@ -1,10 +1,15 @@
 mod problem_5;
+mod problem_226;
 mod problem_561;
 mod problem_70;
 
 pub fn problem_5() {
     assert_eq!("ddtattarrattatdd".to_string(), problem_5::Solution::longest_palindrome("babaddtattarrattatddetartrateedredividerb".to_string()));
     assert_eq!("bb".to_string(), problem_5::Solution::longest_palindrome("abb".to_string()));
+}
+
+pub fn problem_226() {
+    assert_eq!(None, problem_226::Solution::invert_tree(None));
 }
 
 pub fn problem_561() {

@@ -1,5 +1,5 @@
 mod problems;
 
 fn main() {
-    problems::problem_70();
+    problems::problem_226();
 }
