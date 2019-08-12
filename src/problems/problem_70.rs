@@ -119,7 +119,7 @@ impl Solution {
         } else {
             let mut this = 2;
             let mut prev = 1;
-            for i in 3..=n {
+            for _i in 3..=n {
                 let n = this + prev;
                 prev = this;
                 this = n;
