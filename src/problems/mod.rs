@@ -1,9 +1,10 @@
-use std::rc::Rc;
+use crate::problems::problem_337::TreeNode;
 
 mod problem_5;
 mod problem_70;
 mod problem_226;
 mod problem_337;
+mod problem_561;
 mod problem_857;
 
 pub fn problem_5() {
@@ -16,7 +17,10 @@ pub fn problem_226() {
 }
 
 pub fn problem_337() {
-    assert_eq!(0, problem_337::Solution::rob(None));
+    assert_eq!(7, problem_337::Solution::rob(TreeNode::new_from_str("[2,1,3,null,4]")));
+    assert_eq!(7, problem_337::Solution::rob(TreeNode::new_from_str("[3,2,3,null,3,null,null,null,1]")));
+    assert_eq!(24, problem_337::Solution::rob(TreeNode::new_from_str("[8,5,null,4,null,16,null]")));
+    assert_eq!(9, problem_337::Solution::rob(TreeNode::new_from_str("[3,4,5,1,3,null,null,null,null,null,1]")));
 }
 
 pub fn problem_561() {
