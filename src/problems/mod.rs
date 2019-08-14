@@ -1,11 +1,22 @@
+use std::rc::Rc;
+
 mod problem_5;
 mod problem_70;
-mod problem_561;
+mod problem_226;
+mod problem_337;
 mod problem_857;
 
 pub fn problem_5() {
     assert_eq!("ddtattarrattatdd".to_string(), problem_5::Solution::longest_palindrome("babaddtattarrattatddetartrateedredividerb".to_string()));
     assert_eq!("bb".to_string(), problem_5::Solution::longest_palindrome("abb".to_string()));
+}
+
+pub fn problem_226() {
+    assert_eq!(None, problem_226::Solution::invert_tree(None));
+}
+
+pub fn problem_337() {
+    assert_eq!(0, problem_337::Solution::rob(None));
 }
 
 pub fn problem_561() {
@@ -40,5 +51,5 @@ pub fn problem_584() {
     assert_eq!(105f64, problem_857::Solution::mincost_to_hire_workers(vec![10, 20, 5], vec![70, 50, 30], 2));
     assert_eq!(25.5f64, problem_857::Solution::mincost_to_hire_workers(vec![2, 1, 5], vec![17, 6, 4], 2));
     assert_eq!(30.66667f64, problem_857::Solution::mincost_to_hire_workers(vec![3, 1, 10, 10, 1], vec![4, 8, 2, 2, 7], 3));
-    assert_eq!(1979.31429f64, problem_857::Solution::mincost_to_hire_workers(vec![25,68,35,62,52,57,35,83,40,51], vec![147,97,251,129,438,443,120,366,362,343], 6));
+    assert_eq!(1979.31429f64, problem_857::Solution::mincost_to_hire_workers(vec![25, 68, 35, 62, 52, 57, 35, 83, 40, 51], vec![147, 97, 251, 129, 438, 443, 120, 366, 362, 343], 6));
 }
