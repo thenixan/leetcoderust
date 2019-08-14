@@ -6,6 +6,7 @@ mod problem_226;
 mod problem_337;
 mod problem_561;
 mod problem_857;
+mod problem_1052;
 
 pub fn problem_5() {
     assert_eq!("ddtattarrattatdd".to_string(), problem_5::Solution::longest_palindrome("babaddtattarrattatddetartrateedredividerb".to_string()));
@@ -25,6 +26,10 @@ pub fn problem_337() {
 
 pub fn problem_561() {
     assert_eq!(4, problem_561::Solution::array_pair_sum(vec![1, 4, 3, 2]));
+}
+
+pub fn problem_1052() {
+    assert_eq!(16, problem_1052::Solution::max_satisfied(vec![1, 0, 1, 2, 1, 1, 7, 5], vec![0, 1, 0, 1, 0, 1, 0, 1], 3));
 }
 
 pub fn problem_70() {
