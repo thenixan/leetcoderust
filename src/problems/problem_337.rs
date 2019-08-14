@@ -1,10 +1,5 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::str::FromStr;
-use std::ops::Add;
-use std::fmt::{Display, Formatter};
-use std::error::Error;
-use core::fmt::Debug;
 
 // Definition for a binary tree node.
 #[derive(Debug, PartialEq, Eq)]
@@ -96,25 +91,18 @@ impl Decision {
     pub fn empty() -> Self { Decision::new(0, 0) }
 }
 
-enum Status {
-    Robbed,
-    CanRob(i32),
-    CannotRob,
-    Start,
-}
-
 impl Solution {
     pub fn rob(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
-        let decision = Self::iterate(root, 0);
+        let decision = Self::iterate(root);
         return i32::max(decision.if_rob, decision.if_not);
     }
 
-    fn iterate(root: Option<Rc<RefCell<TreeNode>>>, parent: i32) -> Decision {
+    fn iterate(root: Option<Rc<RefCell<TreeNode>>>) -> Decision {
         match root {
             Some(node) => {
                 let val = node.borrow().val;
-                let l_decision = Self::iterate(node.borrow().left.clone(), val);
-                let r_decision = Self::iterate(node.borrow().right.clone(), val);
+                let l_decision = Self::iterate(node.borrow().left.clone());
+                let r_decision = Self::iterate(node.borrow().right.clone());
 
                 let non_rob_profit = l_decision.if_not + r_decision.if_not;
 

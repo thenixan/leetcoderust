@@ -1,5 +1,5 @@
 [package]
-name = "LeetCodeRust"
+name = "leet_code_rust"
 version = "0.1.0"
 authors = ["Ilya Nixan <thenixan@gmail.com>"]
 edition = "2018"

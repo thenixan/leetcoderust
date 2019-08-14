@@ -1,8 +1,5 @@
-use core::borrow::Borrow;
 use std::cell::RefCell;
-use std::mem::swap;
 use std::rc::Rc;
-use std::str::FromStr;
 
 // Definition for a binary tree node.
 #[derive(Debug, PartialEq, Eq)]
@@ -12,16 +9,7 @@ pub struct TreeNode {
     pub right: Option<Rc<RefCell<TreeNode>>>,
 }
 
-impl TreeNode {
-    #[inline]
-    pub fn new(val: i32) -> Self {
-        TreeNode {
-            val,
-            left: None,
-            right: None,
-        }
-    }
-}
+impl TreeNode {}
 
 pub struct Solution {}
 
