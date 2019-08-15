@@ -14,6 +14,8 @@ pub fn resolve(input: &str) {
         "2015-5e" => y2015::task_5::run_e(),
         "2015-6" => y2015::task_6::run(),
         "2015-6e" => y2015::task_6::run_e(),
+        "2015-7" => y2015::task_7::run(),
+        "2015-7e" => y2015::task_7::run_e(),
         _ => println!("Unresolved task")
     }
 }
