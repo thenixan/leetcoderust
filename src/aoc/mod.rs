@@ -1,4 +1,4 @@
-mod y2015;
+pub mod y2015;
 
 pub fn resolve(input: &str) {
     match input {
@@ -8,6 +8,8 @@ pub fn resolve(input: &str) {
         "2015-2e" => y2015::task_2::run_e(),
         "2015-3" => y2015::task_3::run(),
         "2015-3e" => y2015::task_3::run_e(),
+        "2015-4" => y2015::task_4::run(),
+        "2015-4e" => y2015::task_4::run_e(),
         _ => println!("Unresolved task")
     }
 }
