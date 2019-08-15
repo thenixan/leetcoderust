@@ -1,13 +1,16 @@
 use std::env;
 
 mod problems;
+mod aoc;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    let aoc_code = args.get(2);
     match args.get(1) {
         Some(x) => {
             println!("Task: {}", x);
             match x.as_str() {
+                "aoc" => aoc::resolve(aoc_code.unwrap()),
                 "5" => problems::problem_5(),
                 "70" => problems::problem_70(),
                 "226" => problems::problem_226(),
