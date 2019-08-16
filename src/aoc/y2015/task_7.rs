@@ -239,13 +239,15 @@ pub fn run_e() {
     let input = commands
         .iter()
         .enumerate()
-        .find(|(_, c)| match c {
-            Command::Input { output, .. } => output == "b",
-            _ => false
+        .find_map(|(s, c)| {
+            match c {
+                Command::Input { output, .. } => if output == "b" { Some(s) } else { None },
+                _ => None
+            }
         })
         .unwrap();
 
-    commands.remove(input.0);
+    commands.remove(input);
     commands.push(Command::Input { value: first_result, output: "b".to_string() });
 
     let result = evaluate(&commands);
