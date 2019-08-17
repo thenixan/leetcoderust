@@ -1,47 +1,44 @@
+use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufReader, BufRead};
-use std::rc::Rc;
-use core::borrow::Borrow;
-use std::cell::RefCell;
+use std::io::{BufRead, BufReader};
+use std::ops::Add;
 
-struct TreeNode {
-    name: String,
-    destinations: Vec<Destination>,
+#[derive(PartialEq, Clone, Debug, Copy)]
+struct Distance(usize);
+
+impl Distance {
+    fn new(d: usize) -> Self { Distance(d) }
+    fn empty() -> Self { Distance(0_usize) }
 }
 
-struct Destination {
-    to: Rc<RefCell<TreeNode>>,
-    distance: usize,
-}
+impl Add for Distance {
+    type Output = Distance;
 
-impl TreeNode {
-    fn new(name: String) -> Self { TreeNode { name, destinations: vec![] } }
-
-    fn add_destination(&mut self, tree_node: Rc<RefCell<TreeNode>>, distance: usize) {
-        let destination = Destination { to: tree_node, distance };
-        self.destinations.push(destination)
-    }
-
-    fn find(&self, name: &str) -> Option<Rc<Self>> {
-        let mut result = None;
-        for d in self.destinations {
-            if d.to.borrow().name == name.to_string() {
-                result = Some(d.to.borrow());
-                break;
-            }
+    fn add(self, rhs: Self) -> Self::Output {
+        if self.0 == 0_usize || rhs.0 == 0_usize {
+            Distance(0_usize)
+        } else {
+            Distance(self.0 + rhs.0)
         }
-        for d in self.destinations {
-            let r = d.to.borrow().find(name);
-            if r.is_some() {
-                result = r;
-                break;
-            }
-        }
-        return result;
     }
 }
 
-#[derive(Clone)]
+impl PartialOrd for Distance {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.0 == other.0 {
+            Some(Ordering::Equal)
+        } else if self.0 == 0_usize {
+            Some(Ordering::Greater)
+        } else if other.0 == 0_usize {
+            Some(Ordering::Less)
+        } else {
+            self.0.partial_cmp(&other.0)
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 struct Route {
     from: String,
     to: String,
@@ -52,14 +49,10 @@ impl Route {
     fn new(from: String, to: String, distance: usize) -> Self { Route { from, to, distance } }
 }
 
-fn distance_to(routes: &Vec<Route>, from: &String, to: &String) -> Option<usize> {
-    routes.iter().find(|r| &r.from == from && &r.to == to).map(|r| r.distance)
-}
-
 pub fn run() {
     let input = File::open("src/aoc/y2015/task_9").unwrap();
     let input = BufReader::new(input);
-    let routes: Vec<TreeNode> = input.lines()
+    let routes: Vec<Route> = input.lines()
         .into_iter()
         .filter_map(|l| l.ok())
         .map(|l| {
@@ -69,44 +62,69 @@ pub fn run() {
             let route: Vec<&str> = route_part.split(" to ").collect();
             Route::new(route[0].to_string(), route[1].to_string(), distance)
         })
-        .fold(vec![], |mut acc: Vec<Rc<TreeNode>>, r: Route| {
-            let mut from = acc
-                .into_iter()
-                .find(|tn| tn.name == r.from);
-            if from.is_none() {
-                from = acc
-                    .into_iter()
-                    .find(|tn| tn.find(&r.from).is_some());
+        .collect();
+
+
+    let counts = routes
+        .iter()
+        .fold(vec![], |mut acc, r| {
+            if !acc.contains(&r.to) {
+                acc.push(r.to.clone());
             }
-            let mut from = if from.is_none() {
-                let tn = Rc::new(TreeNode::new(r.from));
-                acc.push(tn);
-                tn.borrow()
-            } else {
-                from.unwrap().borrow()
-            };
-
-            let mut to = acc
-                .into_iter()
-                .find(|tn| tn.name == r.to);
-            if to.is_none() {
-                to = acc
-                    .into_iter()
-                    .find(|tn| tn.find(&r.to).is_some());
+            if !acc.contains(&r.from) {
+                acc.push(r.from.clone());
             }
-            let to = if to.is_none() {
-                Rc::new(TreeNode::new(r.to))
-            } else {
-                to.unwrap().borrow()
-            };
-
-            from.add_destination(to, r.distance);
-
             acc
         });
+
+    let mut result = 0;
+    for i in 0..counts.len() {
+        let from = &counts[i];
+        let new_destinations: Vec<String> = counts.iter().filter(|r| r != &from).map(|s| s.clone()).collect();
+        let found_length = find_route(&routes, &new_destinations, &from);
+        if found_length.is_some() {
+            let found_length = found_length.unwrap();
+            if result == 0 || result > found_length {
+                println!("Start: {}", from);
+                result = found_length;
+            }
+        }
+    }
+    println!("{:?}", result)
+}
+
+fn find_route(routes: &Vec<Route>, destinations: &Vec<String>, from: &String) -> Option<usize> {
+    let mut length = 0;
+    if destinations.is_empty() {
+        println!("Finish: {}", from);
+        return Some(0);
+    }
+    for i in 0..destinations.len() {
+        let to = &destinations[i];
+        let route = &routes.into_iter().find(|r| {
+            ((&r.from == from && &r.to == to) || (&r.from == to && &r.to == from)) && destinations.contains(to)
+        });
+        if route.is_some() {
+            let route_length = route.unwrap().distance;
+            let new_destinations: Vec<String> = destinations.iter().filter(|r| r != &to).map(|s| s.clone()).collect();
+            let found_length = find_route(routes, &new_destinations, &to).map(|l| l + route_length);
+            if found_length.is_some() {
+                let found_length = found_length.unwrap();
+                if length == 0 || length > found_length {
+                    println!("To: {}", to);
+                    length = found_length;
+                }
+            }
+        }
+    }
+    if length != 0 {
+        return Some(length);
+    } else {
+        return None;
+    }
 }
 
 pub fn run_e() {
     let input = File::open("src/aoc/y2015/task_9").unwrap();
-    let input = BufReader::new(input);
+    let _input = BufReader::new(input);
 }
