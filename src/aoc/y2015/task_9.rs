@@ -1,42 +1,5 @@
-use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::ops::Add;
-
-#[derive(PartialEq, Clone, Debug, Copy)]
-struct Distance(usize);
-
-impl Distance {
-    fn new(d: usize) -> Self { Distance(d) }
-    fn empty() -> Self { Distance(0_usize) }
-}
-
-impl Add for Distance {
-    type Output = Distance;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        if self.0 == 0_usize || rhs.0 == 0_usize {
-            Distance(0_usize)
-        } else {
-            Distance(self.0 + rhs.0)
-        }
-    }
-}
-
-impl PartialOrd for Distance {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if self.0 == other.0 {
-            Some(Ordering::Equal)
-        } else if self.0 == 0_usize {
-            Some(Ordering::Greater)
-        } else if other.0 == 0_usize {
-            Some(Ordering::Less)
-        } else {
-            self.0.partial_cmp(&other.0)
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 struct Route {
