@@ -15,7 +15,6 @@ fn evaluate(input: String, iteration: usize) -> String {
     if iteration == 0 {
         return input;
     } else {
-        let mut i = 0;
         let modified_input: String = input
             .as_bytes()
             .into_iter()

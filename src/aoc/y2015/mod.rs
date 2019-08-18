@@ -9,3 +9,4 @@ pub mod task_8;
 pub mod task_9;
 pub mod task_10;
 pub mod task_11;
+pub mod task_12;
