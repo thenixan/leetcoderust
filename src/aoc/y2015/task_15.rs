@@ -20,6 +20,8 @@ impl Properties {
     fn new(name: &str, capacity: i32, durability: i32, flavor: i32, texture: i32, calories: i32) -> Self {
         Properties { name: name.clone().to_string(), capacity, durability, flavor, texture, calories }
     }
+
+    fn evaluate(&self, x: i32) -> (i32, i32, i32, i32) { (x * self.capacity, x * self.durability, x * self.flavor, x * self.texture) }
 }
 
 impl FromStr for Properties {
@@ -53,7 +55,7 @@ pub fn run<'a>() {
 
     let target = 100;
 
-    let mut multiplyers = vec![((0f32..=100f32), (0f32..=100f32), (0f32..=100f32), (0f32..=100f32)); input.len()];
+    let mut multiplyers = vec![(0_f32, 0_f32, 0_f32, 0_f32); input.len()];
 
     for i in 0..4 {
         let (pos, neg): (f32, f32) = if i == 0 {
@@ -61,16 +63,16 @@ pub fn run<'a>() {
             let neg: i32 = input.iter().filter_map(|p| if p.capacity < 0 { Some(p.capacity) } else { None }).sum();
             (pos as f32, neg as f32)
         } else if i == 1 {
-            let pos: i32  = input.iter().filter_map(|p| if p.durability >= 0 { Some(p.durability) } else { None }).sum();
-            let neg: i32  = input.iter().filter_map(|p| if p.durability < 0 { Some(p.durability) } else { None }).sum();
+            let pos: i32 = input.iter().filter_map(|p| if p.durability >= 0 { Some(p.durability) } else { None }).sum();
+            let neg: i32 = input.iter().filter_map(|p| if p.durability < 0 { Some(p.durability) } else { None }).sum();
             (pos as f32, neg as f32)
         } else if i == 2 {
-            let pos: i32  = input.iter().filter_map(|p| if p.flavor >= 0 { Some(p.flavor) } else { None }).sum();
-            let neg: i32  = input.iter().filter_map(|p| if p.flavor < 0 { Some(p.flavor) } else { None }).sum();
+            let pos: i32 = input.iter().filter_map(|p| if p.flavor >= 0 { Some(p.flavor) } else { None }).sum();
+            let neg: i32 = input.iter().filter_map(|p| if p.flavor < 0 { Some(p.flavor) } else { None }).sum();
             (pos as f32, neg as f32)
         } else if i == 3 {
-            let pos: i32  = input.iter().filter_map(|p| if p.texture >= 0 { Some(p.texture) } else { None }).sum();
-            let neg: i32  = input.iter().filter_map(|p| if p.texture < 0 { Some(p.texture) } else { None }).sum();
+            let pos: i32 = input.iter().filter_map(|p| if p.texture >= 0 { Some(p.texture) } else { None }).sum();
+            let neg: i32 = input.iter().filter_map(|p| if p.texture < 0 { Some(p.texture) } else { None }).sum();
             (pos as f32, neg as f32)
         } else {
             (0f32, 0f32)
@@ -80,42 +82,50 @@ pub fn run<'a>() {
                 let t = if input[j].capacity == 0 {
                     0f32
                 } else if input[j].capacity > 0 {
-                    100f32 * input[j].capacity as f32 / (neg.abs() + pos)
+                    let mltpl = if pos == input[j].capacity as f32 { 1_f32 } else { (pos - input[j].capacity as f32) / pos };
+                    let mltpl = mltpl * if neg == 0_f32 { input[j].capacity as f32 } else { neg.abs() };
+                    mltpl / (neg.abs() + pos)
                 } else {
-                    100f32 * input[j].capacity as f32 / pos
+                    let mltpl = if neg == input[j].capacity as f32 { 1_f32 } else { (neg - input[j].capacity as f32) / neg };
+                    let mltpl = mltpl * if pos == 0_f32 { input[j].capacity as f32 } else { pos.abs() };
+                    mltpl / (neg.abs() + pos)
                 };
-                let r = if t >= 0f32 { (t..=100f32) } else { (0f32..=t.abs()) };
-                multiplyers[j].0 = r;
+                multiplyers[j].0 = t;
             } else if i == 1 {
                 let t = if input[j].durability == 0 {
                     0f32
                 } else if input[j].durability > 0 {
-                    100f32 * input[j].durability as f32 / (neg.abs() + pos)
+                    let mltpl = if pos == input[j].durability as f32 { 1_f32 } else { (pos - input[j].durability as f32) / pos };
+                    let mltpl = mltpl * if neg == 0_f32 { input[j].durability as f32 } else { neg.abs() };
+                    mltpl / (neg.abs() + pos)
                 } else {
-                    100f32 * input[j].durability as f32 / pos
+                    let mltpl = if neg == input[j].durability as f32 { 1_f32 } else { (neg - input[j].durability as f32) / neg };
+                    let mltpl = mltpl * if pos == 0_f32 { input[j].durability as f32 } else { pos.abs() };
+                    mltpl / (neg.abs() + pos)
                 };
-                let r = if t >= 0f32 { (t..=100f32) } else { (0f32..=t.abs()) };
-                multiplyers[j].1 = r;
+                multiplyers[j].1 = t;
             } else if i == 2 {
                 let t = if input[j].flavor == 0 {
                     0f32
                 } else if input[j].flavor > 0 {
-                    100f32 * input[j].flavor as f32 / (neg.abs() + pos)
+                    let mltpl = if pos == input[j].flavor as f32 { 1_f32 } else { (pos - input[j].flavor as f32) / pos };
+                    mltpl * neg.abs() / (neg.abs() + pos)
                 } else {
-                    100f32 * input[j].flavor as f32 / pos
+                    let mltpl = if neg == input[j].flavor as f32 { 1_f32 } else { (neg - input[j].flavor as f32) / neg };
+                    mltpl * pos / (neg.abs() + pos)
                 };
-                let r = if t >= 0f32 { (t..=100f32) } else { (0f32..=t.abs()) };
-                multiplyers[j].2 = r;
+                multiplyers[j].2 = t;
             } else if i == 3 {
                 let t = if input[j].texture == 0 {
                     0f32
                 } else if input[j].texture > 0 {
-                    100f32 * input[j].texture as f32 / (neg.abs() + pos)
+                    let mltpl = if pos == input[j].texture as f32 { 1_f32 } else { (pos - input[j].texture as f32) / pos };
+                    mltpl * neg.abs() / (neg.abs() + pos)
                 } else {
-                    100f32 * input[j].texture as f32 / pos
+                    let mltpl = if neg == input[j].texture as f32 { 1_f32 } else { (neg - input[j].texture as f32) / neg };
+                    mltpl * pos / (neg.abs() + pos)
                 };
-                let r = if t >= 0f32 { (t..=100f32) } else { (0f32..=t.abs()) };
-                multiplyers[j].3 = r;
+                multiplyers[j].3 = t;
             }
         }
     }
@@ -125,72 +135,51 @@ pub fn run<'a>() {
         table.insert(i.name.clone(), 0);
     }
 
-    let (tx, rx) = channel();
-    for p in 0..input.len() {
-        let tx = tx.clone();
-        let t = table.clone();
-        let i = input.clone();
-        thread::spawn(move || {
-            let table = vec![0; i.len()];
-            let result = evaluate(&i, &table, target - 1);
-            tx.send(result);
-        });
-    }
-
-    let mut result = 0;
-    for p in &input {
-        let r = rx.recv().unwrap();
-        if result < r {
-            result = r;
-        }
-    }
-    println!("Result: {}", result);
-}
-
-fn evaluate(properties: &Vec<Properties>, result: &Vec<i32>, target: i32) -> i32 {
-    if target == 0 {
-        return evaluate_score(properties, result);
-    }
-    let mut max = 0;
-    if target % 10 == 0 {
-        println!("Evaluating: {}", target);
-    }
-    for i in 0..properties.len() {
-        let mut result = result.clone();
-        result[i] += 1;
-        let r = evaluate(properties, &result, target - 1);
-        if r > max {
-            max = r;
-        }
-    }
-    return max;
-}
-
-fn evaluate_score(properties: &Vec<Properties>, result: &Vec<i32>) -> i32 {
-    let result = result.iter()
-        .enumerate()
-        .map(|(p, c)| {
-            (&properties[p], c)
+    let coefficients: Vec<f32> = multiplyers.into_iter()
+        .map(|m| {
+            let sum = m.0 + m.1 + m.2 + m.3;
+            let mut d = 0_f32;
+            if m.0 != 0_f32 {
+                d += 1_f32;
+            }
+            if m.1 != 0_f32 {
+                d += 1_f32;
+            }
+            if m.2 != 0_f32 {
+                d += 1_f32;
+            }
+            if m.3 != 0_f32 {
+                d += 1_f32;
+            }
+            sum / d
         })
-        .map(|(p, c)| {
-            let capacity = p.capacity * *c;
-            let durability = p.durability * *c;
-            let flavor = p.flavor * *c;
-            let texture = p.texture * *c;
-            (capacity, durability, flavor, texture)
-        })
-        .fold((0i32, 0i32, 0i32, 0i32), |mut acc, p| {
-            acc.0 += p.0;
-            acc.1 += p.1;
-            acc.2 += p.2;
-            acc.3 += p.3;
+        .collect();
+
+    let sum: f32 = coefficients.iter().sum();
+    let max = target as f32 / sum;
+
+    let x: Vec<f32> = coefficients.iter().map(|c| c * max).collect();
+    let x: Vec<i32> = x.iter().map(|x| x.floor() as i32).collect();
+
+    let result = x.iter()
+        .zip(input.iter())
+        .map(|(x, c)| { c.evaluate(*x) })
+        .fold((0, 0, 0, 0), |mut acc, r| {
+            acc.0 += r.0;
+            acc.1 += r.1;
+            acc.2 += r.2;
+            acc.3 += r.3;
             acc
         });
-    if result.0 <= 0 || result.1 <= 0 || result.2 <= 0 || result.3 <= 0 {
-        0
-    } else {
-        result.0 * result.1 * result.2 * result.3
-    }
+    let result = {
+        if result.0 <= 0 || result.1 <= 0 || result.2 <= 0 || result.3 <= 0 {
+            0
+        } else {
+            result.0 * result.1 * result.2 * result.3
+        }
+    };
+
+    println!("Result: {}", result);
 }
 
 pub fn run_e() {
