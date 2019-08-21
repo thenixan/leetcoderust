@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, Bytes, Error, Read};
+use std::io::{BufRead, BufReader, Error, Read};
 
 use regex::Regex;
 
@@ -64,7 +64,6 @@ fn read_array(iter: &mut Iterator<Item=Result<u8, Error>>) -> i32 {
             }
         }
     }
-    return result;
 }
 
 fn read_object(iter: &mut Iterator<Item=Result<u8, Error>>) -> i32 {
