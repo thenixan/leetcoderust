@@ -104,6 +104,7 @@ pub fn run_e() {
     result[lx][ly] = true;
     let lx = result.len() - 1;
     let ly = result[lx].len() - 1;
+    result[lx][ly] = true;
     for _ in 0..100 {
         result = next_step_e(result);
     }
