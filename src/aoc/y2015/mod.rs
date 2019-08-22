@@ -15,3 +15,4 @@ pub mod task_14;
 pub mod task_15;
 pub mod task_16;
 pub mod task_17;
+pub mod task_18;
