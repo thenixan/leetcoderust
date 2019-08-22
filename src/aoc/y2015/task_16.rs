@@ -22,6 +22,27 @@ struct Prediction {
     properties: Vec<Property>,
 }
 
+impl Property {
+    fn matches(&self, known: &Vec<Self>) -> bool { known.contains(self) }
+    fn matches_e(&self, known: &Vec<Self>) -> bool {
+        match self {
+            Property::Cats(c) | Property::Trees(c) => known.iter().all(|p| {
+                match p {
+                    Property::Cats(pc) | Property::Trees(pc) => c > pc,
+                    _ => true
+                }
+            }),
+            Property::Pomeranians(c) | Property::Goldfish(c) => known.iter().all(|p| {
+                match p {
+                    Property::Pomeranians(pc) | Property::Goldfish(pc) => c < pc,
+                    _ => true
+                }
+            }),
+            _ => self.matches(known)
+        }
+    }
+}
+
 impl FromStr for Property {
     type Err = String;
 
@@ -69,6 +90,11 @@ impl FromStr for Prediction {
     }
 }
 
+impl Prediction {
+    fn matches(&self, known: &Vec<Property>) -> bool { self.properties.iter().all(|p| p.matches(known)) }
+    fn matches_e(&self, known: &Vec<Property>) -> bool { self.properties.iter().all(|p| p.matches_e(known)) }
+}
+
 pub fn run() {
     let input = File::open("src/aoc/y2015/task_16").unwrap();
     let input = BufReader::new(input);
@@ -93,9 +119,7 @@ pub fn run() {
         .collect();
 
     let result = input.iter()
-        .find(|p| p.properties.iter().all(|ip| {
-            known.contains(ip)
-        }));
+        .find(|p| p.matches(&known));
 
     println!("Result: {}", result.unwrap().number)
 }
@@ -104,4 +128,28 @@ pub fn run() {
 pub fn run_e() {
     let input = File::open("src/aoc/y2015/task_16").unwrap();
     let input = BufReader::new(input);
+
+    let known = vec![
+        Property::Children(3),
+        Property::Cats(7),
+        Property::Samoyeds(2),
+        Property::Pomeranians(3),
+        Property::Akitas(0),
+        Property::Vizslas(0),
+        Property::Goldfish(5),
+        Property::Trees(3),
+        Property::Cars(2),
+        Property::Perfumes(1)];
+
+    let input: Vec<Prediction> = input.lines()
+        .into_iter()
+        .filter_map(|l| l.ok())
+        .map(|l| l.parse::<Prediction>())
+        .filter_map(|p| p.ok())
+        .collect();
+
+    let result = input.iter()
+        .find(|p| p.matches_e(&known));
+
+    println!("Result: {}", result.unwrap().number)
 }
