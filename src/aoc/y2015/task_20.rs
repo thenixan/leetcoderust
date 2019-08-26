@@ -56,7 +56,6 @@ pub fn run_e() {
 }
 
 fn number_of_presents_e(number: usize) -> usize {
-    let mut result = 0;
     if number == 1 {
         return 11;
     }
