@@ -32,7 +32,7 @@ impl Character {
         }
     }
 
-    fn as_caster(&self, this_step: &usize, buffs: &Vec<&Effect>) -> Self {
+    fn as_caster(&self, this_step: &usize, buffs: &Vec<Effect>) -> Self {
         let mut mana = self.mana;
         let mut hit_points = self.hit_points;
         let mut armor = self.armor;
@@ -41,7 +41,7 @@ impl Character {
             hit_points += effect.buff.heal();
             if this_step - effect.casted_at == 1 {
                 armor += effect.buff.armor()
-            } else if this_step - effect.casted_at == effect.buff.steps() {
+            } else if this_step - effect.casted_at > effect.buff.steps() {
                 armor -= effect.buff.armor()
             }
         });
@@ -52,7 +52,7 @@ impl Character {
             damage: self.damage,
         };
     }
-    fn as_target(&self, _: &usize, buffs: &Vec<&Effect>) -> Self {
+    fn as_target(&self, _: &usize, buffs: &Vec<Effect>) -> Self {
         let mut hit_points = self.hit_points;
         buffs.iter().for_each(|effect| {
             hit_points -= effect.buff.damage()
@@ -66,12 +66,14 @@ impl Character {
     }
 }
 
-struct Effect {
+#[derive(Clone)]
+struct Effect<'a> {
     casted_at: usize,
-    buff: Box<Buff>,
+    buff: &'a Buff,
 }
 
-impl Effect {
+impl<'a> Effect<'a> {
+    fn new(buff: &'a Buff, turn: usize) -> Self { Effect { casted_at: turn, buff } }
     fn is_finished(&self, turn: &usize) -> bool { self.buff.steps() < turn - self.casted_at }
 }
 
@@ -85,10 +87,6 @@ enum Buff {
 }
 
 impl Buff {
-    fn effect(&self, step: usize) -> Effect {
-        Effect { casted_at: step, buff: Box::new(self.clone()) }
-    }
-
     fn cost(&self) -> i16 {
         match self {
             Buff::MagicMissle => 53,
@@ -153,7 +151,7 @@ pub fn run() {
 
     let boss = Character::boss(boss[0], boss[1]);
     let player = Character::player(50, 500);
-//    let boss = Character::boss(13, 8);
+//    let boss = Character::boss(14, 8);
 //    let player = Character::player(10, 250);
 
     let buffs = vec![Buff::MagicMissle, Buff::Drain, Buff::Shield, Buff::Poison, Buff::Recharge];
@@ -163,7 +161,7 @@ pub fn run() {
     println!("Result: {}", result)
 }
 
-fn game(player: &Character, boss: &Character, buffs: &Vec<Buff>, effects: Vec<&Effect>, step: usize) -> Option<i16> {
+fn game(player: &Character, boss: &Character, buffs: &Vec<Buff>, effects: Vec<Effect>, step: usize) -> Option<i16> {
     let player = player.as_caster(&step, &effects);
     let boss = boss.as_target(&step, &effects);
 
@@ -177,7 +175,7 @@ fn game(player: &Character, boss: &Character, buffs: &Vec<Buff>, effects: Vec<&E
         return Some(0);
     }
 
-    let active_effects: Vec<&Effect> = effects.into_iter().filter(|e| !e.is_finished(&step)).collect();
+    let active_effects: Vec<Effect> = effects.into_iter().filter(|e| !e.is_finished(&step)).collect();
 
     if step % 2 == 0 {
         let mut result = None;
@@ -185,18 +183,18 @@ fn game(player: &Character, boss: &Character, buffs: &Vec<Buff>, effects: Vec<&E
             let new_buff = &buffs[i];
             if player.mana >= new_buff.mana() && !active_effects.iter().any(|e| e.buff == new_buff) {
                 let mut new_active_effects = active_effects.clone();
-                new_active_effects.push(&new_buff.effect(step));
-                let player = player.spend_mana(new_buff.cost());
-                let r = game(&player, &boss, buffs, new_active_effects, step + 1).map(|c| {
+                new_active_effects.push(Effect::new(new_buff, step));
+                let new_player = player.spend_mana(new_buff.cost());
+                let r = game(&new_player, &boss, buffs, new_active_effects, step + 1).map(|c| {
                     c + new_buff.cost()
                 });
                 if result.is_none() || (r.is_some() && r.unwrap() < result.unwrap()) {
                     result = r;
                 }
             }
-            if step <= 2 {
-                println!("{}:{}", step, i);
-            }
+//            if step <= 2 {
+//                println!("{}:{}", step, i);
+//            }
         }
         return result;
     } else {
