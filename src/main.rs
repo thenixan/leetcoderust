@@ -12,6 +12,7 @@ fn main() {
             match x.as_str() {
                 "aoc" => aoc::resolve(aoc_code.unwrap()),
                 "5" => problems::problem_5(),
+                "7" => problems::problem_7(),
                 "70" => problems::problem_70(),
                 "226" => problems::problem_226(),
                 "337" => problems::problem_337(),

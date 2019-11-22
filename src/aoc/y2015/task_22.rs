@@ -3,18 +3,18 @@ use std::io::{BufRead, BufReader};
 
 #[derive(Clone, Debug)]
 struct Character {
-    hit_points: i16,
+    hit_points: i8,
     mana: i16,
-    damage: i16,
-    armor: i16,
+    damage: i8,
+    armor: i8,
 }
 
 impl Character {
-    fn player(hit_points: i16, mana: i16) -> Self { Character { hit_points, mana, damage: 0, armor: 0 } }
-    fn boss(hit_points: i16, damage: i16) -> Self { Character { hit_points, damage, mana: 0, armor: 0 } }
+    fn player(hit_points: i8, mana: i16) -> Self { Character { hit_points, mana, damage: 0, armor: 0 } }
+    fn boss(hit_points: i8, damage: i8) -> Self { Character { hit_points, mana: 0, damage, armor: 0 } }
 
-    fn damage(&self, damage: i16) -> Self {
-        let damage_done = i16::max(damage - self.armor, 1);
+    fn damage(&self, damage: i8) -> Self {
+        let damage_done = i8::max(damage - self.armor, 1);
         Character {
             hit_points: self.hit_points - damage_done,
             mana: self.mana,
@@ -52,10 +52,9 @@ impl Character {
             damage: self.damage,
         };
     }
-    fn as_target(&self, _: &usize, buffs: &Vec<Effect>) -> Self {
-        let mut hit_points = self.hit_points;
-        buffs.iter().for_each(|effect| {
-            hit_points -= effect.buff.damage()
+    fn as_target(&self, this_step: &usize, buffs: &Vec<Effect>) -> Self {
+        let hit_points = buffs.iter().filter(|effect| this_step - effect.casted_at >= 1).fold(self.hit_points, |acc, effect| {
+            acc - effect.buff.damage()
         });
         return Character {
             hit_points,
@@ -97,14 +96,14 @@ impl Buff {
         }
     }
 
-    fn heal(&self) -> i16 {
+    fn heal(&self) -> i8 {
         match self {
             Buff::Drain => 2,
             _ => 0
         }
     }
 
-    fn armor(&self) -> i16 {
+    fn armor(&self) -> i8 {
         match self {
             Buff::Shield => 7,
             _ => 0
@@ -118,7 +117,7 @@ impl Buff {
         }
     }
 
-    fn damage(&self) -> i16 {
+    fn damage(&self) -> i8 {
         match self {
             Buff::MagicMissle => 4,
             Buff::Drain => 2,
@@ -128,13 +127,14 @@ impl Buff {
     }
 
     fn steps(&self) -> usize {
-        match self {
+        let result = match self {
             Buff::MagicMissle => 1,
             Buff::Drain => 1,
             Buff::Poison => 6,
             Buff::Recharge => 5,
             Buff::Shield => 6
-        }
+        };
+        result - 1
     }
 }
 
@@ -145,23 +145,24 @@ pub fn run() {
     let boss = input.lines()
         .filter_map(|l| l.ok())
         .map(|l: String| l.split(": ").map(|s| s.to_string()).collect())
-        .map(|s: Vec<String>| s[1].parse::<i16>())
+        .map(|s: Vec<String>| s[1].parse::<i8>())
         .filter_map(|s| s.ok())
-        .collect::<Vec<i16>>();
+        .collect::<Vec<i8>>();
 
     let boss = Character::boss(boss[0], boss[1]);
     let player = Character::player(50, 500);
 //    let boss = Character::boss(14, 8);
 //    let player = Character::player(10, 250);
 
-    let buffs = vec![Buff::MagicMissle, Buff::Drain, Buff::Shield, Buff::Poison, Buff::Recharge];
+    let buffs = [Buff::MagicMissle, Buff::Drain, Buff::Shield, Buff::Poison, Buff::Recharge];
 
     let result = game(&player, &boss, &buffs, vec![], 0).unwrap();
 
     println!("Result: {}", result)
 }
 
-fn game(player: &Character, boss: &Character, buffs: &Vec<Buff>, effects: Vec<Effect>, step: usize) -> Option<i16> {
+#[inline]
+fn game(player: &Character, boss: &Character, buffs: &[Buff; 5], effects: Vec<Effect>, step: usize) -> Option<i16> {
     let player = player.as_caster(&step, &effects);
     let boss = boss.as_target(&step, &effects);
 
@@ -192,9 +193,9 @@ fn game(player: &Character, boss: &Character, buffs: &Vec<Buff>, effects: Vec<Ef
                     result = r;
                 }
             }
-//            if step <= 2 {
-//                println!("{}:{}", step, i);
-//            }
+            if step <= 3 {
+                println!("{}:{}", step, i);
+            }
         }
         return result;
     } else {

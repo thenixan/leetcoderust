@@ -225,12 +225,6 @@ pub fn run_e() {
                     let player = &mut Character::player(w_s, a_s, r.clone());
                     if !game(player, &mut enemy.clone()) && cost >= max {
                         max = cost;
-                        println!("-----");
-                        println!("{:?} / {:?}", player.hit_points, enemy.hit_points);
-                        println!("C: {}", cost);
-                        println!("W: {:?}", w_s);
-                        println!("A: {:?}", a_s);
-                        println!("B: {:?}", r);
                     }
                 }
             }
