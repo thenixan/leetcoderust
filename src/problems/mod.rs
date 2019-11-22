@@ -18,6 +18,8 @@ pub fn problem_5() {
 pub fn problem_7() {
     assert_eq!(321, problem_7::Solution::reverse(123));
     assert_eq!(0, problem_7::Solution::reverse(1534236469));
+    assert_eq!(0, problem_7::Solution::reverse(2147483647));
+    assert_eq!(0, problem_7::Solution::reverse(-2147483648));
     assert_eq!(-321, problem_7::Solution::reverse(-123));
     assert_eq!(21, problem_7::Solution::reverse(120));
 }

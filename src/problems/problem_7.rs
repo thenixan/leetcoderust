@@ -11,11 +11,7 @@ impl Solution {
         let input_s: Vec<char> = input.abs().to_string().chars().collect();
         for i in 0..input_s.len() {
             let m = 10u32.pow(i as u32);
-//            if r {
-//                return 0;
-//            } else {
             result += input_s.get(i).unwrap_or(&'0').to_digit(10).unwrap() as u32 * m;
-//            }
         }
         if input < 0 {
             return 0i32 - result as i32;
@@ -25,19 +21,27 @@ impl Solution {
     }
 
     fn check(input: i32) -> bool {
-        //2147483648
-        let mut i = input.abs().to_string();
+        let mut i: String = input.to_string();
+        if input < 0 {
+            i = i.chars().skip(1).collect();
+        }
+        if i.len() > 10 {
+            return false;
+        }
         i.extend(iter::repeat('0').take(10 - i.len()));
-        let result = Solution::check_iter(i.chars().collect(), 0);
-
-        println!("{}", i);
-//        input.rev
-//        let a = std::i32::MAX;
-//        let b = std::i32::MIN;
-        return true;
+        return Solution::check_iter(input > 0, i.chars().rev().collect(), 0);
     }
 
-    fn check_iter(input: Vec<char>, iter: usize) -> i8 {
-        return 0;
+    fn check_iter(is_pos: bool, input: Vec<char>, iter: usize) -> bool {
+        let c: Vec<char> = std::i32::MAX.to_string().chars().collect();
+        if iter == input.len() {
+            return true;
+        } else if input[iter] == c[iter] {
+            return Solution::check_iter(is_pos, input, iter + 1);
+        } else if input[iter] < c[iter] {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
