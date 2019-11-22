@@ -1,6 +1,7 @@
 use crate::problems::problem_337::TreeNode;
 
 mod problem_5;
+mod problem_6;
 mod problem_7;
 mod problem_70;
 mod problem_226;
@@ -13,6 +14,15 @@ mod problem_1052;
 pub fn problem_5() {
     assert_eq!("ddtattarrattatdd".to_string(), problem_5::Solution::longest_palindrome("babaddtattarrattatddetartrateedredividerb".to_string()));
     assert_eq!("bb".to_string(), problem_5::Solution::longest_palindrome("abb".to_string()));
+}
+
+pub fn problem_6() {
+    assert_eq!("PAHNAPLSIIGYIR".to_string(), problem_6::Solution::convert("PAYPALISHIRING".to_string(), 3));
+    assert_eq!("PINALSIGYAHRPI".to_string(), problem_6::Solution::convert("PAYPALISHIRING".to_string(), 4));
+    assert_eq!("AB".to_string(), problem_6::Solution::convert("AB".to_string(), 1));
+    assert_eq!("AB".to_string(), problem_6::Solution::convert("AB".to_string(), 2));
+    assert_eq!("ABC".to_string(), problem_6::Solution::convert("ABC".to_string(), 3));
+    assert_eq!("ACB".to_string(), problem_6::Solution::convert("ABC".to_string(), 2));
 }
 
 pub fn problem_7() {
