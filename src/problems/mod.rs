@@ -7,6 +7,7 @@ mod problem_7;
 mod problem_8;
 mod problem_9;
 mod problem_11;
+mod problem_13;
 mod problem_70;
 mod problem_226;
 mod problem_337;
@@ -65,6 +66,14 @@ pub fn problem_9() {
 
 pub fn problem_11() {
     assert_eq!(49, problem_11::Solution::max_area(vec![1, 8, 6, 2, 5, 4, 8, 3, 7]));
+}
+
+pub fn problem_13() {
+    assert_eq!(3, problem_13::Solution::roman_to_int("III".to_string()));
+    assert_eq!(4, problem_13::Solution::roman_to_int("IV".to_string()));
+    assert_eq!(9, problem_13::Solution::roman_to_int("IX".to_string()));
+    assert_eq!(58, problem_13::Solution::roman_to_int("LVIII".to_string()));
+    assert_eq!(1994, problem_13::Solution::roman_to_int("MCMXCIV".to_string()));
 }
 
 pub fn problem_70() {
