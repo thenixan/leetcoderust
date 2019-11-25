@@ -8,6 +8,7 @@ mod problem_8;
 mod problem_9;
 mod problem_11;
 mod problem_13;
+mod problem_50;
 mod problem_70;
 mod problem_226;
 mod problem_337;
@@ -74,6 +75,12 @@ pub fn problem_13() {
     assert_eq!(9, problem_13::Solution::roman_to_int("IX".to_string()));
     assert_eq!(58, problem_13::Solution::roman_to_int("LVIII".to_string()));
     assert_eq!(1994, problem_13::Solution::roman_to_int("MCMXCIV".to_string()));
+}
+
+pub fn problem_50() {
+    assert_eq!(1024f64, problem_50::Solution::my_pow(2f64, 10));
+    assert_eq!(0.25f64, problem_50::Solution::my_pow(2f64, -2));
+    assert_eq!(9.261f64, problem_50::Solution::my_pow(2.1f64, 3));
 }
 
 pub fn problem_70() {

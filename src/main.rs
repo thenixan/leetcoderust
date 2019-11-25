@@ -19,6 +19,7 @@ fn main() {
                 "9" => problems::problem_9(),
                 "11" => problems::problem_11(),
                 "13" => problems::problem_13(),
+                "50" => problems::problem_50(),
                 "70" => problems::problem_70(),
                 "226" => problems::problem_226(),
                 "337" => problems::problem_337(),
