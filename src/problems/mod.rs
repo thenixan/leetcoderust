@@ -3,6 +3,7 @@ use crate::problems::problem_337::TreeNode;
 mod problem_5;
 mod problem_6;
 mod problem_7;
+mod problem_11;
 mod problem_70;
 mod problem_226;
 mod problem_337;
@@ -32,6 +33,10 @@ pub fn problem_7() {
     assert_eq!(0, problem_7::Solution::reverse(-2147483648));
     assert_eq!(-321, problem_7::Solution::reverse(-123));
     assert_eq!(21, problem_7::Solution::reverse(120));
+}
+
+pub fn problem_11() {
+    assert_eq!(49, problem_11::Solution::max_area(vec![1, 8, 6, 2, 5, 4, 8, 3, 7]));
 }
 
 pub fn problem_70() {
