@@ -28,7 +28,7 @@ pub fn run_e() {
     println!("Result: {}", result);
 }
 
-fn read_array(iter: &mut Iterator<Item=Result<u8, Error>>) -> i32 {
+fn read_array(iter: &mut dyn Iterator<Item=Result<u8, Error>>) -> i32 {
     let mut result = 0;
 
     loop {
@@ -66,7 +66,7 @@ fn read_array(iter: &mut Iterator<Item=Result<u8, Error>>) -> i32 {
     }
 }
 
-fn read_object(iter: &mut Iterator<Item=Result<u8, Error>>) -> i32 {
+fn read_object(iter: &mut dyn Iterator<Item=Result<u8, Error>>) -> i32 {
     let mut result = 0;
 
     let mut has_red = false;
