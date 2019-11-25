@@ -5,6 +5,7 @@ mod problem_5;
 mod problem_6;
 mod problem_7;
 mod problem_8;
+mod problem_9;
 mod problem_11;
 mod problem_70;
 mod problem_226;
@@ -53,6 +54,13 @@ pub fn problem_8() {
     assert_eq!(0, problem_8::Solution::my_atoi("words and 987".to_string()));
     assert_eq!(-2147483648, problem_8::Solution::my_atoi("-91283472332".to_string()));
     assert_eq!(1, problem_8::Solution::my_atoi("+1".to_string()));
+}
+
+pub fn problem_9() {
+    assert_eq!(true, problem_9::Solution::is_palindrome(121));
+    assert_eq!(false, problem_9::Solution::is_palindrome(-121));
+    assert_eq!(false, problem_9::Solution::is_palindrome(10));
+    assert_eq!(true, problem_9::Solution::is_palindrome(1410110141));
 }
 
 pub fn problem_11() {
