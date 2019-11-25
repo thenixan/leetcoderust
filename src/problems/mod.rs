@@ -4,6 +4,7 @@ mod problem_4;
 mod problem_5;
 mod problem_6;
 mod problem_7;
+mod problem_8;
 mod problem_11;
 mod problem_70;
 mod problem_226;
@@ -43,6 +44,15 @@ pub fn problem_7() {
     assert_eq!(0, problem_7::Solution::reverse(-2147483648));
     assert_eq!(-321, problem_7::Solution::reverse(-123));
     assert_eq!(21, problem_7::Solution::reverse(120));
+}
+
+pub fn problem_8() {
+    assert_eq!(42, problem_8::Solution::my_atoi("42".to_string()));
+    assert_eq!(-42, problem_8::Solution::my_atoi("    -42".to_string()));
+    assert_eq!(4193, problem_8::Solution::my_atoi("4193 with words".to_string()));
+    assert_eq!(0, problem_8::Solution::my_atoi("words and 987".to_string()));
+    assert_eq!(-2147483648, problem_8::Solution::my_atoi("-91283472332".to_string()));
+    assert_eq!(1, problem_8::Solution::my_atoi("+1".to_string()));
 }
 
 pub fn problem_11() {
