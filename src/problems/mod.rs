@@ -1,5 +1,6 @@
 use crate::problems::problem_337::TreeNode;
 
+mod problem_4;
 mod problem_5;
 mod problem_6;
 mod problem_7;
@@ -11,6 +12,15 @@ mod problem_561;
 mod problem_838;
 mod problem_857;
 mod problem_1052;
+
+pub fn problem_4() {
+    assert_eq!(2f64, problem_4::Solution::find_median_sorted_arrays(vec![], vec![2]));
+    assert_eq!(2f64, problem_4::Solution::find_median_sorted_arrays(vec![2], vec![]));
+    assert_eq!(0f64, problem_4::Solution::find_median_sorted_arrays(vec![0, 0], vec![0, 0]));
+    assert_eq!(1.5f64, problem_4::Solution::find_median_sorted_arrays(vec![1], vec![2]));
+    assert_eq!(2f64, problem_4::Solution::find_median_sorted_arrays(vec![1, 3], vec![2]));
+    assert_eq!(2.5f64, problem_4::Solution::find_median_sorted_arrays(vec![1, 2], vec![3, 4]));
+}
 
 pub fn problem_5() {
     assert_eq!("ddtattarrattatdd".to_string(), problem_5::Solution::longest_palindrome("babaddtattarrattatddetartrateedredividerb".to_string()));

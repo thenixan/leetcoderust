@@ -11,6 +11,7 @@ fn main() {
             println!("Task: {}", x);
             match x.as_str() {
                 "aoc" => aoc::resolve(aoc_code.unwrap()),
+                "4" => problems::problem_4(),
                 "5" => problems::problem_5(),
                 "6" => problems::problem_6(),
                 "7" => problems::problem_7(),
