@@ -1,12 +1,10 @@
-use std::ops::Index;
-
 pub struct Solution {}
 
 impl Solution {
     pub fn convert(s: String, num_rows: i32) -> String {
         let mut result: Vec<String> = vec![];
 
-        for i in 0..num_rows {
+        for _ in 0..num_rows {
             result.push("".to_string());
         }
 
