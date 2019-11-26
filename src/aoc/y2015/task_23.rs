@@ -64,6 +64,20 @@ pub fn run() {
     println!("Result: {}", b);
 }
 
+pub fn run_e() {
+    let input = File::open("src/aoc/y2015/task_23").unwrap();
+    let input = BufReader::new(input);
+
+    let instructions = input.lines()
+        .filter_map(|s| s.ok())
+        .map(|l| l.parse::<Instruction>())
+        .filter_map(|s| s.ok())
+        .collect::<Vec<Instruction>>();
+
+    let (_, b) = evaluate(&instructions, 0, 1, 0);
+    println!("Result: {}", b);
+}
+
 fn evaluate(instructions: &Vec<Instruction>, position: i32, a: u32, b: u32) -> (u32, u32) {
     if position < 0 || instructions.len() <= position as usize {
         return (a, b)
@@ -106,9 +120,4 @@ fn evaluate(instructions: &Vec<Instruction>, position: i32, a: u32, b: u32) -> (
             }
         },
     }
-}
-
-pub fn run_e() {
-    let input = File::open("src/aoc/y2015/task_23").unwrap();
-    let input = BufReader::new(input);
 }
