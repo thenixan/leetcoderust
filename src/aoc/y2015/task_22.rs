@@ -1,83 +1,73 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-#[derive(Clone, Debug)]
-struct Character {
-    hit_points: i8,
-    mana: i16,
-    damage: i8,
-    armor: i8,
+#[derive(Copy, Clone)]
+struct Player {
+    mana: i32,
+    hit_points: i32,
+    armor: i32,
 }
 
-impl Character {
-    fn player(hit_points: i8, mana: i16) -> Self { Character { hit_points, mana, damage: 0, armor: 0 } }
-    fn boss(hit_points: i8, damage: i8) -> Self { Character { hit_points, mana: 0, damage, armor: 0 } }
+#[derive(Copy, Clone)]
+struct Boss {
+    hit_points: i32,
+    damage: i32,
+}
 
-    fn damage(&self, damage: i8) -> Self {
-        let damage_done = i8::max(damage - self.armor, 1);
-        Character {
-            hit_points: self.hit_points - damage_done,
-            mana: self.mana,
-            damage: self.damage,
-            armor: self.armor,
-        }
+trait Character {
+    fn is_dead(&self) -> bool;
+}
+
+impl Player {
+    fn new(mana: i32, hit_points: i32) -> Self {
+        Player {mana, hit_points, armor: 0}
     }
 
-    fn spend_mana(&self, mana: i16) -> Self {
-        Character {
-            hit_points: self.hit_points,
-            mana: self.mana - mana,
-            damage: self.damage,
-            armor: self.armor,
-        }
-    }
+    fn cast_spell(&mut self, spell: Spell, turn: i32, boss: &mut Boss) -> Option<Effect> {
+        self.mana -= spell.cost();
 
-    fn as_caster(&self, this_step: &usize, buffs: &Vec<Effect>) -> Self {
-        let mut mana = self.mana;
-        let mut hit_points = self.hit_points;
-        let mut armor = self.armor;
-        buffs.iter().for_each(|effect| {
-            mana += effect.buff.mana();
-            hit_points += effect.buff.heal();
-            if this_step - effect.casted_at == 1 {
-                armor += effect.buff.armor()
-            } else if this_step - effect.casted_at > effect.buff.steps() {
-                armor -= effect.buff.armor()
-            }
-        });
-        return Character {
-            mana,
-            hit_points,
-            armor,
-            damage: self.damage,
-        };
-    }
-    fn as_target(&self, this_step: &usize, buffs: &Vec<Effect>) -> Self {
-        let hit_points = buffs.iter().filter(|effect| this_step - effect.casted_at >= 1).fold(self.hit_points, |acc, effect| {
-            acc - effect.buff.damage()
-        });
-        return Character {
-            hit_points,
-            mana: self.mana,
-            damage: self.damage,
-            armor: self.armor,
-        };
+        spell.on_cast(self, boss);
+
+        return spell.effect(turn);
     }
 }
 
-#[derive(Clone)]
-struct Effect<'a> {
-    casted_at: usize,
-    buff: &'a Buff,
+impl Boss {
+    fn new(hit_points: i32, damage: i32) -> Self {
+        Boss {hit_points, damage}
+    }
+
+    fn attack(&self, player: &mut Player) {
+        player.hit_points -= i32::max(self.damage - player.armor, 1);
+    }
 }
 
-impl<'a> Effect<'a> {
-    fn new(buff: &'a Buff, turn: usize) -> Self { Effect { casted_at: turn, buff } }
-    fn is_finished(&self, turn: &usize) -> bool { self.buff.steps() < turn - self.casted_at }
+impl Character for Player {
+    fn is_dead(&self) -> bool {
+        self.hit_points <= 0 || self.mana <= 0
+    }
 }
 
-#[derive(PartialEq)]
-enum Buff {
+impl Character for Boss {
+    fn is_dead(&self) -> bool {
+        self.hit_points <= 0
+    }
+}
+
+#[derive(Copy, Clone)]
+struct Effect {
+    spell: Spell,
+    finishes_on: i32,
+}
+
+impl Effect {
+    fn apply(&self, player: &mut Player, boss: &mut Boss) {
+        self.spell.on_each_turn(player, boss);
+    }
+}
+
+#[derive(PartialEq, Copy, Clone)]
+enum Spell {
     MagicMissle,
     Drain,
     Shield,
@@ -85,56 +75,61 @@ enum Buff {
     Recharge,
 }
 
-impl Buff {
-    fn cost(&self) -> i16 {
+impl Spell {
+    fn cost(&self) -> i32 {
         match self {
-            Buff::MagicMissle => 53,
-            Buff::Drain => 73,
-            Buff::Poison => 173,
-            Buff::Recharge => 229,
-            Buff::Shield => 113
+            Spell::MagicMissle => 53,
+            Spell::Drain => 73,
+            Spell::Shield => 113,
+            Spell::Poison => 173,
+            Spell::Recharge => 229
         }
     }
 
-    fn heal(&self) -> i8 {
+    fn on_cast(&self, player: &mut Player, boss: &mut Boss) {
         match self {
-            Buff::Drain => 2,
-            _ => 0
+            Spell::MagicMissle => boss.hit_points -= 4,
+            Spell::Drain => {
+                player.hit_points += 2;
+                boss.hit_points -= 2;
+            },
+            Spell::Shield => player.armor += 7,
+            _ => (),
         }
     }
 
-    fn armor(&self) -> i8 {
+    fn on_finished(&self, player: &mut Player, _: &mut Boss) {
         match self {
-            Buff::Shield => 7,
-            _ => 0
+            Spell::Shield => player.armor -= 7,
+            _ => (),
         }
     }
 
-    fn mana(&self) -> i16 {
+    fn on_each_turn(&self, player: &mut Player, boss: &mut Boss) {
         match self {
-            Buff::Recharge => 101,
-            _ => 0
+            Spell::Poison => boss.hit_points -= 3,
+            Spell::Recharge => player.mana += 101,
+            _ => (),
         }
     }
 
-    fn damage(&self) -> i8 {
+    fn effect(&self, turn: i32) -> Option<Effect> {
         match self {
-            Buff::MagicMissle => 4,
-            Buff::Drain => 2,
-            Buff::Poison => 3,
-            _ => 0
+            Spell::MagicMissle => None,
+            Spell::Drain => None,
+            Spell::Shield => Some(Effect {
+                spell: self.clone(),
+                finishes_on: turn + 6
+            }),
+            Spell::Poison => Some(Effect {
+                spell: self.clone(),
+                finishes_on: turn + 6
+            }),
+            Spell::Recharge => Some(Effect {
+                spell: self.clone(),
+                finishes_on: turn + 5
+            })
         }
-    }
-
-    fn steps(&self) -> usize {
-        let result = match self {
-            Buff::MagicMissle => 1,
-            Buff::Drain => 1,
-            Buff::Poison => 6,
-            Buff::Recharge => 5,
-            Buff::Shield => 6
-        };
-        result - 1
     }
 }
 
@@ -145,63 +140,142 @@ pub fn run() {
     let boss = input.lines()
         .filter_map(|l| l.ok())
         .map(|l: String| l.split(": ").map(|s| s.to_string()).collect())
-        .map(|s: Vec<String>| s[1].parse::<i8>())
+        .map(|s: Vec<String>| s[1].parse::<i32>())
         .filter_map(|s| s.ok())
-        .collect::<Vec<i8>>();
+        .collect::<Vec<i32>>();
 
-    let boss = Character::boss(boss[0], boss[1]);
-    let player = Character::player(50, 500);
-//    let boss = Character::boss(14, 8);
-//    let player = Character::player(10, 250);
+    let boss = Boss::new(boss[0], boss[1]);
+    let player = Player::new(500, 50);
+    // let boss = Boss::new(13, 8);
+    // let boss = Boss::new(14, 8);
+    // let player = Player::new(250, 10);
 
-    let buffs = [Buff::MagicMissle, Buff::Drain, Buff::Shield, Buff::Poison, Buff::Recharge];
-
-    let result = game(&player, &boss, &buffs, vec![], 0).unwrap();
+    let result = game(&player, &boss, &vec![], 0, None).unwrap();
 
     println!("Result: {}", result)
 }
 
-#[inline]
-fn game(player: &Character, boss: &Character, buffs: &[Buff; 5], effects: Vec<Effect>, step: usize) -> Option<i16> {
-    let player = player.as_caster(&step, &effects);
-    let boss = boss.as_target(&step, &effects);
+fn game(player: &Player, boss: &Boss, effects: &Vec<Effect>, turn: i32, best: Option<i32>) -> Option<i32> {
+    let mut player = *player;
+    let mut boss = *boss;
+    for e in effects {
+        e.apply(&mut player, &mut boss);
+    }
 
-//    if step >= 30 {
-//        return None;
-//    }
-
-    if player.hit_points <= 0 {
+    if player.is_dead() {
         return None;
-    } else if boss.hit_points <= 0 {
+    }
+    if boss.is_dead() {
         return Some(0);
     }
 
-    let active_effects: Vec<Effect> = effects.into_iter().filter(|e| !e.is_finished(&step)).collect();
-
-    if step % 2 == 0 {
-        let mut result = None;
-        for i in 0..buffs.len() {
-            let new_buff = &buffs[i];
-            if player.mana >= new_buff.mana() && !active_effects.iter().any(|e| e.buff == new_buff) {
-                let mut new_active_effects = active_effects.clone();
-                new_active_effects.push(Effect::new(new_buff, step));
-                let new_player = player.spend_mana(new_buff.cost());
-                let r = game(&new_player, &boss, buffs, new_active_effects, step + 1).map(|c| {
-                    c + new_buff.cost()
-                });
-                if result.is_none() || (r.is_some() && r.unwrap() < result.unwrap()) {
-                    result = r;
-                }
-            }
-            if step <= 3 {
-                println!("{}:{}", step, i);
-            }
-        }
-        return result;
-    } else {
-        let player = player.damage(boss.damage);
-        return game(&player, &boss, buffs, active_effects, step + 1);
+    if turn % 200 == 0 {
+        println!("Stepping: {}", turn);
     }
+
+    if turn % 2 == 0 {
+        let mut min = None;
+        let effects = filter_out_effects(effects, turn, &mut player, &mut boss);
+
+        if player.is_dead() {
+            return None;
+        }
+        if boss.is_dead() {
+            return Some(0);
+        }
+
+        for i in 0..5 {
+
+            let mut p = player;
+            let mut b = boss;
+
+            let spell = match i {
+                0 => Spell::Drain,
+                1 => Spell::MagicMissle,
+                2 => Spell::Poison,
+                3 => Spell::Recharge,
+                _ => Spell::Shield
+            };
+            let result = if has_spell(&spell, &effects) {
+                None
+            } else if min.is_some() && min.unwrap() - spell.cost() < 0 {
+                None
+            } else if best.is_some() && best.unwrap() - spell.cost() < 0 {
+                None
+            } else {
+                let effect = p.cast_spell(spell, turn, &mut b);
+                if p.is_dead() {
+                    None
+                } else if b.is_dead() {
+                    Some(0)
+                } else {
+                    let ef = if effect.is_some() {
+                        let mut r = effects.clone();
+                        r.push(effect.unwrap());
+                        r
+                    } else {
+                        effects.clone()
+                    };
+                    game(&p, &b, &ef, turn + 1, min.or_else(|| best).map(|m| m - spell.cost()))
+                } 
+            };
+            match result {
+                Some(m) => {
+                    let cost = m + spell.cost();
+                    if min.is_none() {
+                        min = Some(cost);
+                    } else if min.unwrap() > cost {
+                        min = Some(cost);
+                    }
+                },
+                _ => {},
+            };
+        }
+        min
+    } else {
+        boss.attack(&mut player);
+
+        if player.is_dead() {
+            return None;
+        }
+        if boss.is_dead() {
+            return Some(0);
+        }
+
+        let effects = filter_out_effects(effects, turn, &mut player, &mut boss);
+
+        if player.is_dead() {
+            return None;
+        }
+        if boss.is_dead() {
+            return Some(0);
+        }
+
+        game(&player, &boss, &effects, turn + 1, best)
+    }
+}
+
+fn filter_out_effects(effects: &Vec<Effect>, turn: i32, player: &mut Player, boss: &mut Boss) -> Vec<Effect> {
+    let mut result = vec![];
+
+    for e in effects {
+        if e.finishes_on == turn {
+            e.spell.on_finished(player, boss);
+        } else {
+            result.push(e.clone())
+        }
+    }
+
+    result
+}
+
+fn has_spell(spell: &Spell, effects: &Vec<Effect>) -> bool {
+    for e in effects {
+        if e.spell == *spell {
+            return true;
+        }
+    }
+    return false;
 }
 
 pub fn run_e() {
