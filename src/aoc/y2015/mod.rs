@@ -20,3 +20,4 @@ pub mod task_19;
 pub mod task_20;
 pub mod task_21;
 pub mod task_22;
+pub mod task_23;
