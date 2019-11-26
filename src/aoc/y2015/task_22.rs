@@ -61,8 +61,8 @@ struct Effect {
 }
 
 impl Effect {
-    fn apply(&self, player: &mut Player, boss: &mut Boss) {
-        self.spell.on_each_turn(player, boss);
+    fn apply(&self, player: &mut Player, boss: &mut Boss, turn: i32) {
+        self.spell.on_each_turn(player, boss, turn);
     }
 }
 
@@ -73,6 +73,7 @@ enum Spell {
     Shield,
     Poison,
     Recharge,
+    HardLevelSpell,
 }
 
 impl Spell {
@@ -82,7 +83,8 @@ impl Spell {
             Spell::Drain => 73,
             Spell::Shield => 113,
             Spell::Poison => 173,
-            Spell::Recharge => 229
+            Spell::Recharge => 229,
+            Spell::HardLevelSpell => 0,
         }
     }
 
@@ -105,18 +107,21 @@ impl Spell {
         }
     }
 
-    fn on_each_turn(&self, player: &mut Player, boss: &mut Boss) {
+    fn on_each_turn(&self, player: &mut Player, boss: &mut Boss, turn: i32) {
         match self {
             Spell::Poison => boss.hit_points -= 3,
             Spell::Recharge => player.mana += 101,
+            Spell::HardLevelSpell => {
+                if turn % 2 == 0 {
+                    player.hit_points -= 1;
+                }
+            },
             _ => (),
         }
     }
 
     fn effect(&self, turn: i32) -> Option<Effect> {
         match self {
-            Spell::MagicMissle => None,
-            Spell::Drain => None,
             Spell::Shield => Some(Effect {
                 spell: self.clone(),
                 finishes_on: turn + 6
@@ -128,7 +133,12 @@ impl Spell {
             Spell::Recharge => Some(Effect {
                 spell: self.clone(),
                 finishes_on: turn + 5
-            })
+            }),
+            Spell::HardLevelSpell => Some(Effect {
+                spell: self.clone(),
+                finishes_on: turn - 1, // endless
+            }),
+            _ => None,
         }
     }
 }
@@ -146,9 +156,6 @@ pub fn run() {
 
     let boss = Boss::new(boss[0], boss[1]);
     let player = Player::new(500, 50);
-    // let boss = Boss::new(13, 8);
-    // let boss = Boss::new(14, 8);
-    // let player = Player::new(250, 10);
 
     let result = game(&player, &boss, &vec![], 0, None).unwrap();
 
@@ -159,18 +166,13 @@ fn game(player: &Player, boss: &Boss, effects: &Vec<Effect>, turn: i32, best: Op
     let mut player = *player;
     let mut boss = *boss;
     for e in effects {
-        e.apply(&mut player, &mut boss);
-    }
-
-    if player.is_dead() {
-        return None;
-    }
-    if boss.is_dead() {
-        return Some(0);
-    }
-
-    if turn % 200 == 0 {
-        println!("Stepping: {}", turn);
+        e.apply(&mut player, &mut boss, turn);
+        if player.is_dead() {
+            return None;
+        }
+        if boss.is_dead() {
+            return Some(0);
+        }
     }
 
     if turn % 2 == 0 {
@@ -281,4 +283,18 @@ fn has_spell(spell: &Spell, effects: &Vec<Effect>) -> bool {
 pub fn run_e() {
     let input = File::open("src/aoc/y2015/task_22").unwrap();
     let input = BufReader::new(input);
+
+    let boss = input.lines()
+        .filter_map(|l| l.ok())
+        .map(|l: String| l.split(": ").map(|s| s.to_string()).collect())
+        .map(|s: Vec<String>| s[1].parse::<i32>())
+        .filter_map(|s| s.ok())
+        .collect::<Vec<i32>>();
+
+    let boss = Boss::new(boss[0], boss[1]);
+    let player = Player::new(500, 50);
+
+    let result = game(&player, &boss, &vec![Spell::HardLevelSpell.effect(0).unwrap()], 0, None).unwrap();
+
+    println!("Result: {}", result)
 }
